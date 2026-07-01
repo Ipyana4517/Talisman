@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talisman — Outflow Registry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen font-sans antialiased bg-gradient-to-b from-slate-900 via-slate-950 to-black pb-32 text-slate-100">
+
+    <header class="border-b-2 border-slate-800 bg-slate-900/95 backdrop-blur sticky top-0 z-40 px-4 py-4 shadow-2xl">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-xl bg-rose-500/20 border-2 border-rose-500 flex items-center justify-center text-rose-400 font-bold text-3xl shadow-[0_0_15px_rgba(239,68,68,0.4)]">
+                    📤
+                </div>
+                <h1 class="text-2xl font-black tracking-wider bg-gradient-to-r from-rose-400 to-orange-200 bg-clip-text text-transparent">OUTFLOW JOURNAL</h1>
+            </div>
+
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <div class="bg-slate-900/60 border-2 border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+            
+            <div class="flex justify-between items-center border-b-2 border-slate-800 pb-4">
+                <h2 class="text-lg font-black uppercase tracking-wider text-slate-300">Expense Stream Audit</h2>
+                <div class="text-right">
+                    <span class="text-xs font-bold text-slate-400 block uppercase">Total Aggregated Expenses</span>
+                    <span class="text-3xl font-mono font-black text-rose-400">TZS {{ total_expenses|floatformat:2 }}</span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-xs font-black uppercase tracking-widest text-slate-400">
+                            <th class="py-3 px-2">Execution Date</th>
+                            <th class="py-3 px-2">Description</th>
+                            <th class="py-3 px-2">Target Ledger Account</th>
+                            <th class="py-3 px-2 text-right">Amount (TZS)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/50">
+                        {% for record in records %}
+                        <tr class="text-base font-medium hover:bg-slate-950/40 transition">
+                            <td class="py-4 px-2 font-mono text-xs text-slate-400">{{ record.date }}</td>
+                            <td class="py-4 px-2 text-slate-100 font-black">{{ record.title }}</td>
+                            <td class="py-4 px-2 text-slate-400"><span class="bg-slate-950 border border-slate-800 px-3 py-1 rounded-lg text-sm font-bold text-slate-300">{{ record.category.name }}</span></td>
+                            <td class="py-4 px-2 text-right font-mono font-black text-rose-400">{{ record.amount|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="py-12 text-center text-sm font-bold text-slate-500">No outgoing operational records posted.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 flex justify-between items-center">
+                <span class="text-base font-black uppercase tracking-wider text-slate-300">Journal Aggregate Totals</span>
+                <span class="text-2xl font-mono font-black text-rose-400">TZS {{ total_expenses|floatformat:2 }}</span>
+            </div>
+        </div>
+    </main>
+
+    <footer class="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-t-2 border-slate-800 shadow-2xl py-3 px-4">
+        <div class="max-w-md mx-auto flex justify-center items-center space-x-6">
+            <a href="{% url 'dashboard' %}" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-200 font-bold">
+                <span class="text-3xl">📊</span><span class="text-xs mt-1">Hub</span>
+            </a>
+            <a href="{% url 'accounts' %}" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-200 font-bold">
+                <span class="text-3xl">🗂️</span><span class="text-xs mt-1">Accounts</span>
+            </a>
+            <a href="{% url 'income' %}" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-200 font-bold">
+                <span class="text-3xl">📥</span><span class="text-xs mt-1">Inflow</span>
+            </a>
+            <a href="{% url 'expenses' %}" class="flex flex-col items-center p-2 text-rose-400 font-black">
+                <span class="text-3xl">📤</span><span class="text-xs mt-1">Outflow</span>
+            </a>
+            <a href="{% url 'reports' %}" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-200 font-bold">
+                <span class="text-3xl">📄</span><span class="text-xs mt-1">Reports</span>
+            </a>
+        </div>
+    </footer>
+
+</body>
+</html>

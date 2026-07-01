@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talisman — Financial Gateway</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen font-sans antialiased bg-gradient-to-b from-slate-900 via-slate-950 to-black flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+
+    <div class="sm:mx-auto w-full max-w-md">
+        <div class="flex justify-center mb-6">
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500 flex items-center justify-center text-emerald-400 font-bold text-2xl shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+                🔮
+            </div>
+        </div>
+        <h2 class="text-center text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">
+            TALISMAN
+        </h2>
+        <p class="mt-2 text-center text-sm text-slate-400">
+            Secure Wealth Analytics Portal
+        </p>
+    </div>
+
+    <div class="mt-8 sm:mx-auto w-full max-w-md px-4">
+        <div class="bg-slate-900/40 border border-slate-800/80 backdrop-blur rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl"></div>
+
+            {% if next %}
+                <div class="mb-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-center text-xs text-amber-400 font-medium">
+                    🔒 Access Restricted. Please authenticate to initialize dashboard.
+                </div>
+            {% endif %}
+
+            {% if user.is_authenticated == False and request.GET.next == None and "logout" not in request.path %}
+                {% elif "logout" in request.path or request.GET.logged_out %}
+                <div class="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl text-center text-xs text-blue-400 font-medium">
+                    🛡️ Session terminated. Talisman disconnected securely.
+                </div>
+            {% endif %}
+
+            {% if form.errors %}
+                <div class="mb-4 p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-center text-xs text-rose-400 font-medium">
+                    ❌ Invalid signature credentials. Try again.
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'login' %}" class="space-y-5">
+                {% csrf_csrf_token %}
+                {% csrf_token %}
+                
+                <div>
+                    <label for="id_username" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Identity Username</label>
+                    <input type="text" name="username" id="id_username" required autofocus
+                           class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-slate-100 focus:outline-none focus:border-emerald-500 transition font-mono">
+                </div>
+
+                <div>
+                    <label for="id_password" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Security Passphrase</label>
+                    <input type="password" name="password" id="id_password" required
+                           class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-slate-100 focus:outline-none focus:border-emerald-500 transition font-mono">
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" 
+                            class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm px-6 py-3.5 rounded-xl transition shadow-lg shadow-emerald-950/40 border border-emerald-500/20 tracking-wider uppercase">
+                        Initialize Session
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

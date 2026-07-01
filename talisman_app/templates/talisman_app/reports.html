@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talisman — Drill-down Audit Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="min-h-screen font-sans antialiased bg-gradient-to-b from-slate-900 via-slate-950 to-black pb-32 text-slate-100">
+
+    <div style="position: absolute; left: -9999px; top: -9999px;">
+        <div id="print-canvas-node" style="width: 680px; padding: 40px; background-color: #ffffff; color: #0f172a; font-family: sans-serif; border-radius: 8px;">
+            <div style="border-bottom: 3px solid #1e3a8a; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                    <h1 style="font-size: 24px; font-weight: 900; color: #1e3a8a; margin: 0; letter-spacing: 1px;">TALISMAN MANAGEMENT REPORT</h1>
+                    <p style="font-size: 11px; color: #475569; font-weight: bold; margin: 4px 0 0 0; text-transform: uppercase;">Ledger Statement Extract</p>
+                </div>
+                <div style="text-align: right;">
+                    <p style="font-size: 11px; margin: 0; font-weight: bold; color: #1e293b;">Auditor: Edwin</p>
+                    <p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0;" id="pdf-timestamp"></p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 24px; background-color: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                <h3 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0; text-transform: uppercase;" id="pdf-account-title">ACCOUNT TITLE</h3>
+                <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">Reporting Period Window Range: {{ start_date }} to {{ end_date }}</p>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #0f172a; color: #475569; text-transform: uppercase; font-weight: 800;">
+                        <th style="padding: 8px 4px;">Posting Date</th>
+                        <th style="padding: 8px 4px;">Memo / Operational Entry Description</th>
+                        <th style="padding: 8px 4px; text-align: right;">Value Posted</th>
+                    </tr>
+                </thead>
+                <tbody id="pdf-table-body" style="color: #334155;"></tbody>
+            </table>
+
+            <div style="border-top: 2px solid #0f172a; margin-top: 30px; padding-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #475569;">Cumulative Aggregated Statement Total</span>
+                <span style="font-size: 14px; font-weight: 900; color: #1e3a8a;" id="pdf-total-amount">TZS 0.00</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-layout" class="space-y-6">
+        <header class="border-b-2 border-slate-800 bg-slate-900/95 backdrop-blur sticky top-0 z-40 px-6 py-4 flex items-center justify-between shadow-2xl">
+            <div class="flex items-center space-x-3">
+                <div class="w-11 h-11 rounded-xl bg-blue-500/10 border-2 border-blue-500 flex items-center justify-center text-blue-400 font-bold text-2xl">🛡️</div>
+                <div>
+                    <h1 class="text-xl font-black tracking-wider bg-gradient-to-r from-slate-100 via-blue-400 to-indigo-200 bg-clip-text text-transparent">TALISMAN</h1>
+                    <p class="text-[10px] font-mono tracking-widest text-slate-400 uppercase">Audit Statement Center</p>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto px-4 py-8 space-y-6">
+            <section class="bg-slate-900/80 border-2 border-slate-800 rounded-2xl p-5 shadow-xl">
+                <form method="GET" action="" class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Start Date</label>
+                        <input type="date" name="start_date" value="{{ start_date }}" class="w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-2.5 font-bold text-slate-100 focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">End Date</label>
+                        <input type="date" name="end_date" value="{{ end_date }}" class="w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-2.5 font-bold text-slate-100 focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3.5 rounded-xl transition uppercase tracking-wider text-sm">
+                        Filter Balance Logs
+                    </button>
+                </form>
+            </section>
+
+            <section class="bg-slate-900/60 border-2 border-slate-800 rounded-2xl p-6 shadow-2xl space-y-8">
+                
+                <div class="space-y-4">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-indigo-400 border-b border-slate-800 pb-2">Equity & Capital Accounts</h3>
+                    {% for sub in equity_breakdown %}
+                    <div id="subledger-container-{{ sub.id }}" class="border-2 border-slate-800 rounded-xl p-4 bg-slate-950/20 space-y-4 transition target:border-blue-500 target:bg-slate-900/40">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h4 class="text-sm font-black uppercase text-slate-200 tracking-wider">📁 {{ sub.name }}</h4>
+                            <button onclick="downloadCleanReportPdf(this)" data-account-name="{{ sub.name }}" data-total-amount="TZS {{ sub.amount|floatformat:2 }}" data-target-node="rows-node-{{ sub.id }}" class="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs px-4 py-2 rounded-xl transition uppercase tracking-wider">📥 Download PDF Document</button>
+                        </div>
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="text-slate-500 font-mono uppercase tracking-wider border-b border-slate-900">
+                                    <th class="pb-2">Date</th>
+                                    <th class="pb-2">Memo Description</th>
+                                    <th class="pb-2 text-right">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-900 text-slate-300 font-medium" id="rows-node-{{ sub.id }}">
+                                {% for line in sub.lines %}
+                                <tr class="transaction-row">
+                                    <td class="py-2.5 font-mono text-slate-500 w-32">{{ line.date|date:"Y-m-d" }}</td>
+                                    <td class="py-2.5 font-bold text-slate-200">{{ line.title }}</td>
+                                    <td class="py-2.5 text-right font-mono font-black text-slate-100">TZS {{ line.amount|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr class="empty-placeholder-row">
+                                    <td colspan="3" class="py-4 text-center font-bold text-slate-600">No matching entry postings inside this window.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-emerald-400 border-b border-slate-800 pb-2">Asset Accounts</h3>
+                    {% for sub in asset_breakdown %}
+                    <div id="subledger-container-{{ sub.id }}" class="border-2 border-slate-800 rounded-xl p-4 bg-slate-950/20 space-y-4 transition target:border-blue-500 target:bg-slate-900/40">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h4 class="text-sm font-black uppercase text-slate-200 tracking-wider">📁 {{ sub.name }}</h4>
+                            <button onclick="downloadCleanReportPdf(this)" data-account-name="{{ sub.name }}" data-total-amount="TZS {{ sub.amount|floatformat:2 }}" data-target-node="rows-node-{{ sub.id }}" class="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs px-4 py-2 rounded-xl transition uppercase tracking-wider">📥 Download PDF Document</button>
+                        </div>
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="text-slate-500 font-mono uppercase tracking-wider border-b border-slate-900">
+                                    <th class="pb-2">Date</th>
+                                    <th class="pb-2">Memo Description</th>
+                                    <th class="pb-2 text-right">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-900 text-slate-300 font-medium" id="rows-node-{{ sub.id }}">
+                                {% for line in sub.lines %}
+                                <tr class="transaction-row">
+                                    <td class="py-2.5 font-mono text-slate-500 w-32">{{ line.date|date:"Y-m-d" }}</td>
+                                    <td class="py-2.5 font-bold text-slate-200">{{ line.title }}</td>
+                                    <td class="py-2.5 text-right font-mono font-black text-slate-100">TZS {{ line.amount|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr class="empty-placeholder-row">
+                                    <td colspan="3" class="py-4 text-center font-bold text-slate-600">No matching entry postings inside this window.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-amber-400 border-b border-slate-800 pb-2">Liability Accounts</h3>
+                    {% for sub in liability_breakdown %}
+                    <div id="subledger-container-{{ sub.id }}" class="border-2 border-slate-800 rounded-xl p-4 bg-slate-950/20 space-y-4 transition target:border-blue-500 target:bg-slate-900/40">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h4 class="text-sm font-black uppercase text-slate-200 tracking-wider">📁 {{ sub.name }}</h4>
+                            <button onclick="downloadCleanReportPdf(this)" data-account-name="{{ sub.name }}" data-total-amount="TZS {{ sub.amount|floatformat:2 }}" data-target-node="rows-node-{{ sub.id }}" class="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs px-4 py-2 rounded-xl transition uppercase tracking-wider">📥 Download PDF Document</button>
+                        </div>
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="text-slate-500 font-mono uppercase tracking-wider border-b border-slate-900">
+                                    <th class="pb-2">Date</th>
+                                    <th class="pb-2">Memo Description</th>
+                                    <th class="pb-2 text-right">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-900 text-slate-300 font-medium" id="rows-node-{{ sub.id }}">
+                                {% for line in sub.lines %}
+                                <tr class="transaction-row">
+                                    <td class="py-2.5 font-mono text-slate-500 w-32">{{ line.date|date:"Y-m-d" }}</td>
+                                    <td class="py-2.5 font-bold text-slate-200">{{ line.title }}</td>
+                                    <td class="py-2.5 text-right font-mono font-black text-slate-100">TZS {{ line.amount|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr class="empty-placeholder-row">
+                                    <td colspan="3" class="py-4 text-center font-bold text-slate-600">No matching entry postings inside this window.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-sky-400 border-b border-slate-800 pb-2">Income & Revenue Accounts</h3>
+                    {% for sub in income_breakdown %}
+                    <div id="subledger-container-{{ sub.id }}" class="border-2 border-slate-800 rounded-xl p-4 bg-slate-950/20 space-y-4 transition target:border-blue-500 target:bg-slate-900/40">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h4 class="text-sm font-black uppercase text-slate-200 tracking-wider">📁 {{ sub.name }}</h4>
+                            <button onclick="downloadCleanReportPdf(this)" data-account-name="{{ sub.name }}" data-total-amount="TZS {{ sub.amount|floatformat:2 }}" data-target-node="rows-node-{{ sub.id }}" class="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs px-4 py-2 rounded-xl transition uppercase tracking-wider">📥 Download PDF Document</button>
+                        </div>
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="text-slate-500 font-mono uppercase tracking-wider border-b border-slate-900">
+                                    <th class="pb-2">Date</th>
+                                    <th class="pb-2">Memo Description</th>
+                                    <th class="pb-2 text-right">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-900 text-slate-300 font-medium" id="rows-node-{{ sub.id }}">
+                                {% for line in sub.lines %}
+                                <tr class="transaction-row">
+                                    <td class="py-2.5 font-mono text-slate-500 w-32">{{ line.date|date:"Y-m-d" }}</td>
+                                    <td class="py-2.5 font-bold text-slate-200">{{ line.title }}</td>
+                                    <td class="py-2.5 text-right font-mono font-black text-slate-100">TZS {{ line.amount|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr class="empty-placeholder-row">
+                                    <td colspan="3" class="py-4 text-center font-bold text-slate-600">No matching entry postings inside this window.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-rose-400 border-b border-slate-800 pb-2">Expense Accounts</h3>
+                    {% for sub in expense_breakdown %}
+                    <div id="subledger-container-{{ sub.id }}" class="border-2 border-slate-800 rounded-xl p-4 bg-slate-950/20 space-y-4 transition target:border-blue-500 target:bg-slate-900/40">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h4 class="text-sm font-black uppercase text-slate-200 tracking-wider">📁 {{ sub.name }}</h4>
+                            <button onclick="downloadCleanReportPdf(this)" data-account-name="{{ sub.name }}" data-total-amount="TZS {{ sub.amount|floatformat:2 }}" data-target-node="rows-node-{{ sub.id }}" class="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs px-4 py-2 rounded-xl transition uppercase tracking-wider">📥 Download PDF Document</button>
+                        </div>
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="text-slate-500 font-mono uppercase tracking-wider border-b border-slate-900">
+                                    <th class="pb-2">Date</th>
+                                    <th class="pb-2">Memo Description</th>
+                                    <th class="pb-2 text-right">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-900 text-slate-300 font-medium" id="rows-node-{{ sub.id }}">
+                                {% for line in sub.lines %}
+                                <tr class="transaction-row">
+                                    <td class="py-2.5 font-mono text-slate-500 w-32">{{ line.date|date:"Y-m-d" }}</td>
+                                    <td class="py-2.5 font-bold text-slate-200">{{ line.title }}</td>
+                                    <td class="py-2.5 text-right font-mono font-black text-slate-100">TZS {{ line.amount|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr class="empty-placeholder-row">
+                                    <td colspan="3" class="py-4 text-center font-bold text-slate-600">No matching entry postings inside this window.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <footer class="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-t-2 border-slate-800 shadow-2xl py-3 px-4">
+        <div class="max-w-md mx-auto flex justify-center items-center space-x-6">
+            <a href="{% url 'dashboard' %}" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-200 font-bold"><span class="text-3xl">📊</span><span class="text-xs mt-1">Hub</span></a>
+            <a href="{% url 'accounts' %}" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-200 font-bold"><span class="text-3xl">🗂️</span><span class="text-xs mt-1">Accounts</span></a>
+            <a href="{% url 'income' %}" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-200 font-bold"><span class="text-3xl">📥</span><span class="text-xs mt-1">Inflow</span></a>
+            <a href="{% url 'expenses' %}" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-200 font-bold"><span class="text-3xl">📤</span><span class="text-xs mt-1">Outflow</span></a>
+            <a href="{% url 'reports' %}" class="flex flex-col items-center p-2 text-blue-400 font-black"><span class="text-3xl">📄</span><span class="text-xs mt-1">Reports</span></a>
+        </div>
+    </footer>
+
+    <script>
+        function downloadCleanReportPdf(buttonElement) {
+            // Read properties safely from dataset attributes to prevent Javascript single-quote crashes
+            const accountName = buttonElement.getAttribute('data-account-name');
+            const totalAmount = buttonElement.getAttribute('data-total-amount');
+            const targetNodeId = buttonElement.getAttribute('data-target-node');
+            
+            const targetContainer = document.getElementById(targetNodeId);
+            
+            // STRICT VALIDATION ENGINE: Block accounts that contain placeholder empty states
+            if (targetContainer.querySelector('.empty-placeholder-row') || !targetContainer.querySelector('.transaction-row')) {
+                alert("Action Blocked: This account does not have any recorded transactions within the specified date filter.");
+                return; 
+            }
+
+            // Extract only real transaction rows HTML
+            const innerRowsHTML = targetContainer.innerHTML;
+            
+            // Map values to hidden clean printable container
+            document.getElementById('pdf-account-title').innerText = accountName.toUpperCase() + " LOG EXTRACT";
+            document.getElementById('pdf-total-amount').innerText = totalAmount;
+            document.getElementById('pdf-table-body').innerHTML = innerRowsHTML;
+            document.getElementById('pdf-timestamp').innerText = "Run Date: " + new Date().toISOString().split('T')[0];
+            
+            const printElement = document.getElementById('print-canvas-node');
+            
+            const pdfSettings = {
+                margin:       [0.5, 0.5, 0.5, 0.5],
+                filename:     accountName.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_statement.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            // Run compiler pipeline
+            html2pdf().set(pdfSettings).from(printElement).save();
+        }
+
+        // SMART SCROLL AND FOCUS INTERACTION ENGINE
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentHash = window.location.hash;
+            if (currentHash && currentHash.startsWith('#subledger-container-')) {
+                const elementToFocus = document.getElementById(currentHash.substring(1));
+                if (elementToFocus) {
+                    setTimeout(() => {
+                        elementToFocus.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        elementToFocus.classList.add('ring-2', 'ring-blue-500', 'bg-slate-900/30');
+                    }, 300);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

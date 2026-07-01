@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talisman — Executive Operations Command</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen font-sans antialiased bg-gradient-to-b from-slate-900 via-slate-950 to-black pb-32 text-slate-100">
+
+    <header class="border-b-2 border-slate-800 bg-slate-900/95 backdrop-blur sticky top-0 z-40 px-6 py-4 shadow-2xl flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="w-11 h-11 rounded-xl bg-blue-500/10 border-2 border-blue-500 flex items-center justify-center text-blue-400 font-bold text-2xl shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                🛡️
+            </div>
+            <div>
+                <h1 class="text-xl font-black tracking-wider bg-gradient-to-r from-slate-100 via-blue-400 to-indigo-200 bg-clip-text text-transparent">TALISMAN</h1>
+                <p class="text-[10px] font-mono tracking-widest text-slate-400 uppercase">Core Operations Engine</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        
+        <div class="bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 border-2 border-slate-800 rounded-2xl p-6 shadow-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center space-x-4">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 border border-blue-400/20 flex items-center justify-center text-xl font-black text-white tracking-wider shadow-lg uppercase">
+                    {{ request.user.username|slice:":1"|default:"A" }}
+                </div>
+                <div>
+                    <span class="text-[10px] font-mono tracking-widest text-emerald-400 uppercase font-black block mb-0.5">Active Workspace Identity</span>
+                    <h2 class="text-2xl font-black text-slate-100 tracking-tight">
+                        Welcome back, {{ request.user.username|default:"Authorized User" }}
+                    </h2>
+                </div>
+            </div>
+            <div class="text-left border-t sm:border-t-0 sm:border-l-2 border-slate-800 pt-4 sm:pt-0 sm:pl-6 w-full sm:w-auto">
+                <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">System Role</span>
+                <span class="block text-sm font-black text-slate-200">Management & Audit Access</span>
+            </div>
+        </div>
+
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-gradient-to-br from-slate-900/50 to-slate-950/40 border-2 border-slate-800 rounded-2xl p-5 shadow-lg">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-black text-emerald-400 uppercase tracking-widest">Total Income</span>
+                    <span class="text-xl">📥</span>
+                </div>
+                <span class="text-2xl font-mono font-black text-slate-100 block tracking-tight">
+                    TZS {{ total_income|default:"0.00"|floatformat:2 }}
+                </span>
+            </div>
+
+            <div class="bg-gradient-to-br from-slate-900/50 to-slate-950/40 border-2 border-slate-800 rounded-2xl p-5 shadow-lg">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-black text-rose-400 uppercase tracking-widest">Total Expenses</span>
+                    <span class="text-xl">📤</span>
+                </div>
+                <span class="text-2xl font-mono font-black text-slate-100 block tracking-tight">
+                    TZS {{ total_expenses|default:"0.00"|floatformat:2 }}
+                </span>
+            </div>
+
+            <div class="bg-gradient-to-br from-slate-900/50 to-slate-950/40 border-2 border-slate-800 rounded-2xl p-5 shadow-lg border-indigo-500/20">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-black text-indigo-400 uppercase tracking-widest">Debt-To-Equity</span>
+                    <span class="text-xl">⚖️</span>
+                </div>
+                <span class="text-2xl font-mono font-black text-indigo-300 block tracking-tight">
+                    {{ debt_to_equity_ratio|default:"0.00" }}
+                </span>
+            </div>
+
+            <div class="bg-gradient-to-br from-slate-900/50 to-slate-950/40 border-2 border-slate-800 rounded-2xl p-5 shadow-lg border-amber-500/20">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-black text-amber-400 uppercase tracking-widest">Due Payments</span>
+                    <span class="text-xl">⏳</span>
+                </div>
+                <span class="text-2xl font-mono font-black text-amber-300 block tracking-tight">
+                    TZS {{ pending_payments_total|default:"0.00"|floatformat:2 }}
+                </span>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="lg:col-span-2 bg-slate-900/60 border-2 border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                <div class="border-b border-slate-800 pb-2">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-slate-300 flex items-center gap-2">
+                        <span>🔔</span> System Alerts & Notifications
+                    </h3>
+                </div>
+                <div class="space-y-3 max-h-[260px] overflow-y-auto pr-2">
+                    {% for notification in notifications %}
+                    <div class="p-3.5 rounded-xl bg-slate-950 border-2 border-slate-900 flex items-start gap-3 transition hover:border-slate-800">
+                        <span class="text-base mt-0.5">
+                            {% if notification.type == 'ALERT' %}🚨
+                            {% elif notification.type == 'SUCCESS' %}✅
+                            {% else %}ℹ️{% endif %}
+                        </span>
+                        <div>
+                            <p class="text-xs font-bold text-slate-200 leading-normal">{{ notification.message }}</p>
+                            <span class="text-[9px] font-mono text-slate-600 block mt-1 uppercase font-bold">{{ notification.timestamp|date:"Y-m-d H:i" }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="py-12 text-center text-xs font-bold text-slate-600">
+                        No outstanding notifications or reconciliation alerts logged.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-slate-900/80 to-slate-950/40 border-2 border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                <div>
+                    <span class="text-xs font-black text-blue-400 uppercase tracking-widest block mb-1">Quick Action Navigation</span>
+                    <p class="text-xs text-slate-400 font-medium leading-relaxed">
+                        Talisman Core Engine parameters are stable. Jump directly into your active general ledgers to check current balances or run audit trail queries.
+                    </p>
+                </div>
+                <div class="space-y-2 mt-6">
+                    <a href="{% url 'accounts' %}" class="block text-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black py-3 px-4 rounded-xl transition uppercase tracking-wider text-xs shadow-md">
+                        Open Accounts Ledger Workspace →
+                    </a>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <footer class="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-t-2 border-slate-800 shadow-2xl py-3 px-4">
+        <div class="max-w-md mx-auto flex justify-center items-center space-x-6">
+            <a href="{% url 'dashboard' %}" class="flex flex-col items-center p-2 text-blue-400 font-black"><span class="text-3xl">📊</span><span class="text-xs mt-1">Hub</span></a>
+            <a href="{% url 'accounts' %}" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-200 font-bold"><span class="text-3xl">🗂️</span><span class="text-xs mt-1">Accounts</span></a>
+            <a href="{% url 'income' %}" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-200 font-bold"><span class="text-3xl">📥</span><span class="text-xs mt-1">Inflow</span></a>
+            <a href="{% url 'expenses' %}" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-200 font-bold"><span class="text-3xl">📤</span><span class="text-xs mt-1">Outflow</span></a>
+            <a href="{% url 'reports' %}" class="flex flex-col items-center p-2 text-slate-400 hover:text-slate-200 font-bold"><span class="text-3xl">📄</span><span class="text-xs mt-1">Reports</span></a>
+        </div>
+    </footer>
+
+</body>
+</html>
