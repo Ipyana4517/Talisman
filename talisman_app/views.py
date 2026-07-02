@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.db.models import Sum
 from django.utils import timezone
@@ -94,7 +95,23 @@ def transaction_entry_view(request):
     categories = FinancialCategory.objects.all().order_by('type', 'name')
     return render(request, 'talisman_app/transaction_entry.html', {'categories': categories})
 
+# ==============================================================================
+# Login required decorator can be added to the views above if authentication is implemented.
+#=============================================================================
+@login_required
+def accounts_view(request):
+    if request.method == "POST":
+        name = request.POST.get('name')
+        category_type = request.POST.get('type')
+        
+        FinancialCategory.objects.create(
+            user=request.user,  # Uses the securely logged-in user
+            name=name,
+            type=category_type
+        )
+        return redirect('accounts')
 
+    # ... Rest of your code (core pillars, etc.) stays exactly the same ...
 # ==============================================================================
 # 3. CHART OF ACCOUNTS & COA MANAGER
 # ==============================================================================
